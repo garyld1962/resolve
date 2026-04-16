@@ -33,7 +33,14 @@ export function DecisionCard({ decision }: { decision: DecisionListItem }) {
           <h3 className="text-base font-medium text-cloud-white group-hover:text-white">
             {decision.title}
           </h3>
-          <StatusBadge status={decision.status} />
+          <div className="flex items-center gap-3 shrink-0">
+            {decision.chainPosition !== null && (
+              <span className="font-mono text-xs text-hash-glow">
+                #{decision.chainPosition}
+              </span>
+            )}
+            <StatusBadge status={decision.status} />
+          </div>
         </div>
 
         <TechnologyTagList tags={decision.tags} />

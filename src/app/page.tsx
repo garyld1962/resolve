@@ -1,12 +1,16 @@
 import Link from "next/link";
 import { DecisionCard } from "@/components/decision-card";
+import { getChainSummary } from "@/db/queries/chain";
 import { listDecisionsByProjectSlug } from "@/db/queries/decisions";
 import { DEFAULT_PROJECT_SLUG } from "@/lib/default-project";
 
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const decisions = await listDecisionsByProjectSlug(DEFAULT_PROJECT_SLUG);
+  const [decisions, chain] = await Promise.all([
+    listDecisionsByProjectSlug(DEFAULT_PROJECT_SLUG),
+    getChainSummary(DEFAULT_PROJECT_SLUG),
+  ]);
   const committedCount = decisions.filter((d) => d.status === "committed").length;
 
   return (
@@ -25,12 +29,20 @@ export default async function Home() {
               : `${decisions.length} decision${decisions.length === 1 ? "" : "s"} · ${committedCount} committed`}
           </p>
         </div>
-        <Link
-          href="/decisions/new"
-          className="inline-flex h-10 items-center rounded-[var(--radius-button)] bg-integrity-emerald px-6 text-sm font-medium text-obsidian transition-colors hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-integrity-emerald"
-        >
-          Record Decision
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/chain"
+            className="inline-flex h-10 items-center rounded-[var(--radius-button)] border border-frost-line bg-transparent px-5 text-sm font-medium text-cloud-white transition-colors hover:bg-iron-panel"
+          >
+            Chain Status
+          </Link>
+          <Link
+            href="/decisions/new"
+            className="inline-flex h-10 items-center rounded-[var(--radius-button)] bg-integrity-emerald px-6 text-sm font-medium text-obsidian transition-colors hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-integrity-emerald"
+          >
+            Record Decision
+          </Link>
+        </div>
       </header>
 
       {decisions.length === 0 ? (
@@ -44,8 +56,14 @@ export default async function Home() {
       )}
 
       <footer className="flex gap-6 text-xs text-zinc-whisper">
-        <span>Milestone M1 — Record &amp; List</span>
-        <span className="font-mono">chain: uninitialized</span>
+        <span>Milestone M2 — Chain</span>
+        <span className="font-mono">
+          chain: {chain.length === 0
+            ? "uninitialized"
+            : chain.verify.ok
+              ? `${chain.length} verified`
+              : `broken at #${chain.verify.breakAt}`}
+        </span>
       </footer>
     </main>
   );
