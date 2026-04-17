@@ -4,12 +4,20 @@ import {
   uuid,
   text,
   timestamp,
+  bigint,
+  customType,
   index,
+  uniqueIndex,
 } from "drizzle-orm/pg-core";
 import { projects } from "./projects";
 
-/* M1 lifecycle: proposed (mutable draft) → committed (immutable once hashed in M2).
-   amended / superseded arrive in later milestones — not part of M1 exit criteria. */
+/* Postgres bytea as Buffer — used for 32-byte SHA-256 hashes (content/prev/entry). */
+const bytea = customType<{ data: Buffer; driverData: Buffer }>({
+  dataType: () => "bytea",
+});
+
+/* M1 lifecycle: proposed (mutable draft) → committed (hashed into chain, immutable).
+   amended / superseded arrive in later milestones. */
 export const decisionStatus = pgEnum("decision_status", [
   "proposed",
   "committed",
@@ -32,11 +40,24 @@ export const decisions = pgTable(
       .notNull()
       .defaultNow(),
     committedAt: timestamp("committed_at", { withTimezone: true }),
+
+    /* Chain fields — null while proposed, populated atomically at commit time.
+       chain_position is monotonic per project (not global) and enforced unique
+       by the (project_id, chain_position) index below. entry_hash =
+       sha256(content_hash ‖ prev_hash ‖ chain_position_be_u64). */
+    chainPosition: bigint("chain_position", { mode: "number" }),
+    contentHash: bytea("content_hash"),
+    prevHash: bytea("prev_hash"),
+    entryHash: bytea("entry_hash"),
   },
   (t) => [
     index("decisions_project_id_idx").on(t.projectId),
     index("decisions_status_idx").on(t.status),
     index("decisions_created_at_idx").on(t.createdAt.desc()),
+    uniqueIndex("decisions_chain_position_per_project_idx").on(
+      t.projectId,
+      t.chainPosition,
+    ),
   ],
 );
 
