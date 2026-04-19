@@ -240,14 +240,14 @@ export type ListDecisionsFilters = {
   limit?: number;
 };
 
-const LIST_DEFAULT_LIMIT = 20;
+const DEFAULT_LIMIT = 20;
 
 /* Filter-only decision list — no embedding, no semantic similarity.
    Powers the filter branch of the MCP query_decisions tool; also usable
    anywhere else a pure-filter result is enough. Ordered by created_at
    DESC so "show me recent Postgres decisions" returns newest first. */
 export async function listDecisionsFiltered(filters: ListDecisionsFilters) {
-  const limit = filters.limit ?? LIST_DEFAULT_LIMIT;
+  const limit = filters.limit ?? DEFAULT_LIMIT;
   const conditions = [] as ReturnType<typeof eq>[];
   if (filters.projectSlug)
     conditions.push(eq(projects.slug, filters.projectSlug));
