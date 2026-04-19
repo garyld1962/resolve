@@ -1,5 +1,15 @@
 import "server-only";
-import { and, asc, desc, eq, isNotNull, sql } from "drizzle-orm";
+import {
+  and,
+  arrayContains,
+  asc,
+  desc,
+  eq,
+  gte,
+  isNotNull,
+  lte,
+  sql,
+} from "drizzle-orm";
 import { db } from "../client";
 import {
   decisions,
@@ -218,4 +228,42 @@ export async function listChainByProjectSlug(projectSlug: string) {
       ),
     )
     .orderBy(asc(decisions.chainPosition));
+}
+
+export type ListDecisionsFilters = {
+  projectSlug?: string;
+  status?: "proposed" | "committed" | "amended" | "superseded";
+  /* All tags must be present (array contains semantics, NOT overlap). */
+  tags?: string[];
+  from?: Date;
+  to?: Date;
+  limit?: number;
+};
+
+const LIST_DEFAULT_LIMIT = 20;
+
+/* Filter-only decision list — no embedding, no semantic similarity.
+   Powers the filter branch of the MCP query_decisions tool; also usable
+   anywhere else a pure-filter result is enough. Ordered by created_at
+   DESC so "show me recent Postgres decisions" returns newest first. */
+export async function listDecisionsFiltered(filters: ListDecisionsFilters) {
+  const limit = filters.limit ?? LIST_DEFAULT_LIMIT;
+  const conditions = [] as ReturnType<typeof eq>[];
+  if (filters.projectSlug)
+    conditions.push(eq(projects.slug, filters.projectSlug));
+  if (filters.status) conditions.push(eq(decisions.status, filters.status));
+  if (filters.tags && filters.tags.length > 0) {
+    conditions.push(arrayContains(decisions.tags, filters.tags));
+  }
+  if (filters.from) conditions.push(gte(decisions.committedAt, filters.from));
+  if (filters.to) conditions.push(lte(decisions.committedAt, filters.to));
+
+  const q = db
+    .select(DECISION_LIST_SELECT)
+    .from(decisions)
+    .innerJoin(projects, eq(decisions.projectId, projects.id))
+    .orderBy(desc(decisions.createdAt))
+    .limit(limit);
+
+  return conditions.length > 0 ? q.where(and(...conditions)) : q;
 }
