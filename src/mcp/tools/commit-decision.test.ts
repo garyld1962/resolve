@@ -96,7 +96,9 @@ describeDb("commitDecisionTool", () => {
 
   itDb("returns NOT_FOUND on unknown id", async () => {
     const res = await commitDecisionTool.handler({
-      id: "00000000-0000-0000-0000-0000deadbeef",
+      // Valid v4 UUID format (version digit "4", variant "8") guaranteed not
+      // to exist in the DB. Zod v4's .uuid() enforces these digits.
+      id: "00000000-0000-4000-8000-000000000000",
     });
     expect(res.isError).toBe(true);
     const payload = JSON.parse(res.content[0].text);

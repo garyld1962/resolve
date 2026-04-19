@@ -18,12 +18,9 @@ export const commitDecisionTool = {
     "Commit a proposed decision — extends the SHA-256 chain and schedules the embedding backfill.",
   inputSchema: InputSchema,
   handler: wrapTool(async (raw: CommitDecisionInput) => {
-    let input: z.output<typeof InputSchema>;
-    try {
-      input = InputSchema.parse(raw);
-    } catch {
-      throw new ToolError("NOT_FOUND", `No decision ${(raw as { id?: string }).id ?? "unknown"}`);
-    }
+    // Zod validation errors bubble as MCP InvalidParams — distinct from
+    // NOT_FOUND (which means the id was well-formed but unknown).
+    const input = InputSchema.parse(raw);
     const result = await commitDecision(input.id);
     if (!result) {
       // commitDecision returns null when: id doesn't exist OR status !== 'proposed'.
