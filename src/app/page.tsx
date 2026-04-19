@@ -37,6 +37,12 @@ export default async function Home() {
             Chain Status
           </Link>
           <Link
+            href="/search"
+            className="inline-flex h-10 items-center rounded-[var(--radius-button)] border border-frost-line bg-transparent px-5 text-sm font-medium text-cloud-white transition-colors hover:bg-iron-panel"
+          >
+            Search
+          </Link>
+          <Link
             href="/decisions/new"
             className="inline-flex h-10 items-center rounded-[var(--radius-button)] bg-integrity-emerald px-6 text-sm font-medium text-obsidian transition-colors hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-integrity-emerald"
           >
@@ -56,7 +62,7 @@ export default async function Home() {
       )}
 
       <footer className="flex gap-6 text-xs text-zinc-whisper">
-        <span>Milestone M2 — Chain</span>
+        <span>Milestone M3 — Search</span>
         <span className="font-mono">
           chain: {chain.length === 0
             ? "uninitialized"
