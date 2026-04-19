@@ -3,6 +3,7 @@ import "server-only";
 const VOYAGE_URL = "https://api.voyageai.com/v1/embeddings";
 const MODEL = "voyage-3-large";
 const DIMENSIONS = 1024;
+const TIMEOUT_MS = 15_000;
 
 export type VoyageInputType = "document" | "query";
 
@@ -39,6 +40,7 @@ export async function embed(
       authorization: `Bearer ${requireKey()}`,
     },
     body: JSON.stringify({ model: MODEL, input: texts, input_type: inputType }),
+    signal: AbortSignal.timeout(TIMEOUT_MS),
   });
 
   if (!res.ok) {

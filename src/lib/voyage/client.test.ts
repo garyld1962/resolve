@@ -6,10 +6,13 @@ const ORIGINAL_KEY = process.env.VOYAGE_API_KEY;
 describe("embed", () => {
   beforeEach(() => {
     process.env.VOYAGE_API_KEY = "test-key";
-    vi.restoreAllMocks();
   });
   afterEach(() => {
-    process.env.VOYAGE_API_KEY = ORIGINAL_KEY;
+    vi.restoreAllMocks();
+    // `process.env.X = undefined` coerces to the literal string "undefined".
+    // Restore the original presence-or-absence faithfully.
+    if (ORIGINAL_KEY === undefined) delete process.env.VOYAGE_API_KEY;
+    else process.env.VOYAGE_API_KEY = ORIGINAL_KEY;
   });
 
   it("posts to Voyage with the expected payload and returns vectors in input order", async () => {
