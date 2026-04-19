@@ -1,0 +1,2 @@
+ALTER TABLE "decisions" ADD COLUMN "embedding" vector(1024);--> statement-breakpoint
+CREATE INDEX "decisions_embedding_idx" ON "decisions" USING hnsw ("embedding" vector_cosine_ops) WHERE "decisions"."embedding" IS NOT NULL;

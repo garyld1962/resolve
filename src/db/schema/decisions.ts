@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm";
 import {
   pgTable,
   pgEnum,
@@ -8,6 +9,7 @@ import {
   customType,
   index,
   uniqueIndex,
+  vector,
 } from "drizzle-orm/pg-core";
 import { projects } from "./projects";
 
@@ -49,6 +51,10 @@ export const decisions = pgTable(
     contentHash: bytea("content_hash"),
     prevHash: bytea("prev_hash"),
     entryHash: bytea("entry_hash"),
+
+    /* M3: Voyage embedding of (title + "\n\n" + rationale) at commit time.
+       NULL until embedded — backfill script fills gaps if Voyage is down. */
+    embedding: vector("embedding", { dimensions: 1024 }),
   },
   (t) => [
     index("decisions_project_id_idx").on(t.projectId),
@@ -58,6 +64,9 @@ export const decisions = pgTable(
       t.projectId,
       t.chainPosition,
     ),
+    index("decisions_embedding_idx")
+      .using("hnsw", t.embedding.op("vector_cosine_ops"))
+      .where(sql`${t.embedding} IS NOT NULL`),
   ],
 );
 

@@ -44,3 +44,9 @@ next-env.d.ts
 # playwright mcp smoke-test artifacts
 /.playwright-mcp/
 /m1-*.png
+/scripts/tamper.ts
+CLAUDE.local.md
+
+# claude-code session state and backup directories
+/.claude/
+/.claude.bak-*/
