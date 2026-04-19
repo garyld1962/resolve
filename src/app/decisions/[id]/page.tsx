@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { HashDisplay } from "@/components/hash-display";
+import { ImpactPanel } from "@/components/impact-panel";
 import { StatusBadge } from "@/components/status-badge";
 import { TechnologyTagList } from "@/components/technology-tag";
 import { getDecisionById } from "@/db/queries/decisions";
@@ -122,6 +123,8 @@ export default async function DecisionDetailPage({
           </p>
         </section>
       )}
+
+      <ImpactPanel decisionId={decision.id} />
 
       {decision.status === "committed" && !onChain && (
         <section
