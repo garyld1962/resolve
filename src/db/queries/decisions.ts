@@ -232,7 +232,10 @@ export async function listChainByProjectSlug(projectSlug: string) {
 
 export type ListDecisionsFilters = {
   projectSlug?: string;
-  status?: "proposed" | "committed" | "amended" | "superseded";
+  /* Matches the decision_status DB enum (see src/db/schema/decisions.ts).
+     Expand to "amended" | "superseded" in M5.5 when the amendment-lifecycle
+     migration lands. */
+  status?: "proposed" | "committed";
   /* All tags must be present (array contains semantics, NOT overlap). */
   tags?: string[];
   from?: Date;

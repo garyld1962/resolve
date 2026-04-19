@@ -9,12 +9,11 @@ export const TagsSchema = z
 
 export const LinearIssuesSchema = TagsSchema;
 
-export const StatusSchema = z.enum([
-  "proposed",
-  "committed",
-  "amended",
-  "superseded",
-]);
+/* Matches the decision_status DB enum (src/db/schema/decisions.ts).
+   Will expand to include "amended" + "superseded" in M5.5 when the
+   amendment-lifecycle migration lands — until then, filtering/querying
+   for those values would return empty and mislead agents. */
+export const StatusSchema = z.enum(["proposed", "committed"]);
 
 /* ISO 8601 date string → Date. Rejects unparseable input. Used by
    query_decisions from/to filters. */
