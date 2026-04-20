@@ -50,3 +50,6 @@ CLAUDE.local.md
 # claude-code session state and backup directories
 /.claude/
 /.claude.bak-*/
+
+# git worktrees (per-feature isolated checkouts)
+/.worktrees/
