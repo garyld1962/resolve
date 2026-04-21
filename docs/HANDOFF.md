@@ -208,6 +208,7 @@ pnpm dev                                    # http://localhost:3000
 4. **Add `VOYAGE_API_KEY` to Vercel preview env.** Currently only Production + Development have it; PR previews of `/search` will fail until added: `vercel env add VOYAGE_API_KEY preview`. M5 preview smoked OK because `query_decisions` only hits Voyage when `query` is provided — tools/list and other tools don't.
 5. **Verify the M4 production deploy** (browser smoke at `/cross-impact` and a Decision Detail page after the squashed `703464e` rolls out — check `vercel ls` for deploy state).
 6. **Upgrade Vercel CLI to 51.8+** and re-add `RESOLVE_MCP_TOKEN` to preview as all-branches (currently scoped to `feat/m5-mcp` only). CLI 51.5.0 ignores `--yes` on the all-preview-branches form of `vercel env add`. Until upgraded, every new preview branch will 401 on `/api/mcp/mcp` until its own branch-scoped env is added.
+7. **Exclude `/api/mcp/*` from Vercel deployment protection.** Production deployment protection currently double-gates the MCP route — Vercel SSO in front of our bearer auth — which makes the route uncallable by any external agent (the whole point of M5). Vercel → Project Settings → Deployment Protection → add a path-based exception for `/api/mcp/*`. Bearer auth (`RESOLVE_MCP_TOKEN`) remains the single gate. Confirmed live on production (`x-matched-path: /api/mcp/[transport]` returned 401 from `withMcpAuth` on 2026-04-21) but not curl-smokeable from outside the dashboard until the exception is added.
 
 ### 🟢 Roadmap
 
